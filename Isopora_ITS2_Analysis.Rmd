@@ -355,7 +355,7 @@ kdist_iso_symbioant <- fasta_iso_symbioant %>%
 #k_tree_iso_symbioant
 
 #save(k_tree_iso_symbioant, file = "kdist_iso_symbioant.RData")
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2 Isopora/kdist_iso_symbioant.RData")
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
 ```
 
 ```{r}
@@ -448,7 +448,7 @@ combined_plot
 
 It is unclear to me how we determine the outlier samples here
 ```{r}
-pcoa_iso <- cmdscale(dist_iso, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
+pcoa_iso <- cmdscale(dist_iso_symbioant, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
 
 #outlier_samples <- XX
 
@@ -480,7 +480,7 @@ isoPCA
 ## Procrustes Rotation
 
 ```{r}
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2 Isopora/Isopora/ind_coords_iso.RData")
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
 
 iso_seqs_host <- ind_coords_iso %>% 
   mutate("sample_name" = VialID)
@@ -497,6 +497,9 @@ names(reef_pal2) <- reef_names
 #here is the subset with the data that matches the host data
 shared_seqs_iso <- inner_join(iso_seqs_host, seq_data, by = "sample_name")
 
+seq_data %>% 
+  distinct(sample_name) #should be 187 in the symbioant
+
 shared_seqs_iso <- shared_seqs_iso %>% 
   select(sample_name)
 ```
@@ -504,7 +507,7 @@ shared_seqs_iso <- shared_seqs_iso %>%
 Host tree
 
 ```{r}
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2 Isopora/Isopora/iso_gen.RData") #load host data
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/iso_gen.RData") #load host data
 
 library(adegenet) #install required package
 library(poppr)
@@ -566,7 +569,7 @@ P.dist_intersect <- P.dist[intersect_samples, intersect_samples_col]
 H.dist_intersect <- H.dist[intersect_samples, intersect_samples_col ]
 
 # Subset to only the samples that are in both datasets
-intersect_samples <- intersect(rownames(H.dist_intersect_complete), rownames(P.dist_intersect))
+intersect_samples <- intersect(rownames(H.dist_intersect), rownames(P.dist_intersect))
 P.dist <- P.dist_intersect
 H.dist <- H.dist_intersect
 
@@ -641,7 +644,7 @@ procrust.iso <- ggplot(hp.df.iso2) +
 
 ```
 
-###Test significance 
+### Test significance 
 
 ```{r}
 #testing significance 
