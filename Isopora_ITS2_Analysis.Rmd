@@ -498,7 +498,9 @@ names(reef_pal2) <- reef_names
 shared_seqs_iso <- inner_join(iso_seqs_host, seq_data, by = "sample_name")
 
 seq_data %>% 
-  distinct(sample_name) #should be 187 in the symbioant
+  distinct(sample_name) %>% 
+  nrow()
+ #should be 187 in the symbioant
 
 shared_seqs_iso <- shared_seqs_iso %>% 
   select(sample_name)
@@ -534,7 +536,7 @@ host_dist_matrix <- as.dist(host_shared_dist)
 #Create a matrix with only common sample names for symbioant
 seqs_wide_symbioant <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
-  filter(sample_name %in% sample_names) %>% 
+  filter(sample_name %in% shared_seqs_iso$sample_name) %>% 
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
   tibble::column_to_rownames(var = "sample_name")
   
@@ -615,18 +617,16 @@ Quantiles of Procrustes errors:
 hp.df.iso <- data.frame(rda1=paco.iso$Yrot[,1],
 rda2=paco.iso$Yrot[,2],xrda1=paco.iso$X[,1],
 xrda2=paco.iso$X[,2]) %>% 
-  tibble::rownames_to_column(var = "Vial") %>% 
-  filter(Vial != c("P ver 001", "P ver 010"))
-#pver 001, pver010 need to be removed bc outliers 
+  tibble::rownames_to_column(var = "Vial") 
 
 
 #filter metadata to just reef
 meta.reef <- meta_iso %>% 
-  dplyr::select(Vial, Reef)
+  select(sample_name, Reef) %>% 
+  rename(sample_name = "Vial")
 
 #left join the metadata to get reef into the dataframe 
-hp.df.iso2 <- hp.df.iso %>% left_join(meta.reef) %>% 
-  mutate(Reef = factor(Reef, levels = c("Elizabeth", "Middleton", "Cato", "Wreck", "Kenn", "Mellish", "Marion","Frederick", "Saumarez", "Madgelaine", "NA"))) 
+hp.df.iso2 <- hp.df.iso %>% left_join(meta.reef)
 
 #create plot 
 procrust.iso <- ggplot(hp.df.iso2) +
