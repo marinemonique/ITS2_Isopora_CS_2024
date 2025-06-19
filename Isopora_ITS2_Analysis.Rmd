@@ -522,10 +522,10 @@ ind_names_host <- indNames(iso_gen)
 sample_names <- shared_seqs_iso$sample_name
 
 # Subset the genind object to retain only matching individuals
-iso_gen_subset <- iso_gen[ind_names_host %in% sample_names, ]
+iso_gen_subset <- iso_gen[ind_names_host %in% shared_seqs_iso$sample_name, ]
 
-length(indNames(iso_gen))          # Before
-length(indNames(iso_gen_subset))   # After
+length(indNames(iso_gen))          # Before 189
+length(indNames(iso_gen_subset))   # After 188
 
 #Compute the pairwise distances between multivariate observations; used on raw allele frequencies.
 host_shared_dist <- dist(iso_gen_subset, method = "euclidean") #calculate euclidean distance 
@@ -535,11 +535,15 @@ host_dist_matrix <- as.dist(host_shared_dist)
 
 #Create a matrix with only common sample names for symbioant
 seqs_wide_symbioant <- seq_data %>%
-  dplyr::select(sample_name, name, value) %>%
+  select(sample_name, name, value) %>%
   filter(sample_name %in% shared_seqs_iso$sample_name) %>% 
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
-  tibble::column_to_rownames(var = "sample_name")
-  
+  tibble::column_to_rownames(var = "sample_name") #187 samples
+
+#k_tree_iso_symbioant <- kdist_iso_symbioant %>% phangorn::upgma()
+
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
+
 k_unidist_symbioant <- GUniFrac(seqs_wide_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
 k_unidist_symbioant <- k_unidist_symbioant$unifracs
 
@@ -556,13 +560,13 @@ dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
 ```{r}
 #convert host (H) and symbiont (P) distance trees as data matrices
 H.dist <- host_dist_matrix %>% as.matrix()
-P.dist <- dist_iso_symbioant %>% as.matrix()
+P.dist <- dist_iso_symbioant %>% as.matrix() 
 ```
 
 ```{r}
 #must have same number of dimensions 
 dim(H.dist)
-dim(P.dist)
+dim(P.dist) #its really odd that the symbioant has 186 when the code running above has 187 sample names
 
 # Subset to only the samples that are in both datasets
 intersect_samples <- intersect(rownames(H.dist), rownames(P.dist))
