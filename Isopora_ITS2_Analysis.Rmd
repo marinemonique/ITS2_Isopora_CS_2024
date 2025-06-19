@@ -646,6 +646,7 @@ procrust.iso <- ggplot(hp.df.iso2) +
     panel.grid.major = element_blank()) +
   theme(aspect.ratio = 1) 
 
+save(procrust.iso, file = "procrust.iso.RData")
 ```
 
 ### Test significance 
@@ -654,3 +655,25 @@ procrust.iso <- ggplot(hp.df.iso2) +
 #testing significance 
 protest(X = H.dist, Y = P.dist, scores = "sites", permutations = 999)
 ```
+
+Visualise what is going on without those two massive outliers
+```{r}
+no_outliers_iso_procreates <- hp.df.iso2 %>% 
+  filter(xrda1> -50,
+         xrda2>-50)
+
+#create plot 
+procrust.iso.2 <- ggplot(no_outliers_iso_procreates) +
+  geom_segment(aes(x=rda1,y=rda2,xend=xrda1,yend=xrda2), size = .2) +
+  geom_point(aes(x=rda1, y=rda2, shape = "Host", color = Reef)) +
+  geom_point(aes(x=xrda1, y=xrda2, shape = "Symbiont", color = Reef)) +
+  scale_shape_manual(name = "Groups", 
+                     values = c("Host" = 19, "Symbiont" = 17)) +
+  scale_colour_manual(values = reef_pal2) +
+    theme(legend.position = "none") +
+  theme(plot.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()) +
+  theme(aspect.ratio = 1) 
+```
+
