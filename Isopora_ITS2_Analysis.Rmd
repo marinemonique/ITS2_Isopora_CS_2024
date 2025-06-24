@@ -237,6 +237,8 @@ all_pal['non-profile sequences'] <- "#808080"
 # Join profiles and sequence data together into single dataframe and add more metadata
 all_data <- rbind(seqs_long, profile_data) 
 
+#symbioant_iso_all <- all_data
+#save(symbioant_iso_all, file = "symbioant_iso_all.RData")
 ```
 
 
@@ -289,7 +291,7 @@ all_data %>%
 ```{r}
 library(tidyverse)
 
-#total type profiles across Pocilloporidae 
+#total type profiles across Isopora 
 all_data %>%
   filter(str_detect(name, "p_")) %>%    #profiles start with p_
   group_by(name) %>%
@@ -300,6 +302,16 @@ all_data %>%
   mutate(cumulative_sum = cumsum(prop)) %>% 
   print(n=50) #to get a list of the type profiles in isopora
 
+#all_data %>%
+  #filter(str_detect(name, "p_")) %>%    #profiles start with p_
+  #group_by(name) %>%
+  #dplyr:: count() %>%
+  #dplyr:: arrange(desc(n)) %>%
+  #ungroup() %>%
+  #mutate(prop = n/sum(n)) %>%
+  #mutate(cumulative_sum = cumsum(prop)) %>% 
+  #print(n=50) %>% 
+#write.csv(file = "Isopora_ITS2_Type_Profiles.csv")
 ```
 
 
