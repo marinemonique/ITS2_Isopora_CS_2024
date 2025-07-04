@@ -277,7 +277,7 @@ isoPCA_A
 ```
 
 
-#Cladicopium
+# Cladicopium
 
 ```{r}
 seqs_long_C <- seqs_long %>% 
@@ -482,6 +482,21 @@ seqs_wide_iso_D <- seq_data_D %>%
   tibble::column_to_rownames(var = "sample_name")
 head(seqs_wide_iso_D) #62
 ```
+
+***If you're working with a wide-format table and still see 62 columns, it's likely 3 of those columns are not ASVs (e.g., sample IDs, other symbiont clades, or low-abundance ASVs not in the tree).***
+
+```{r}
+# how many names are in the abundance object?
+n_unique_table <- length(unique(seqs_long_D$name))
+
+# how many labels finally made it into the DNAbin object / tree?
+n_tree <- length(names(fasta_iso_D))        # or length(k_tree_iso_D$tip.label)
+
+c(table = n_unique_table, tree = n_tree)
+
+```
+
+
 
 
 ```{r}
