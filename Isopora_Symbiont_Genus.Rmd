@@ -258,37 +258,8 @@ k_unidist_iso_D <- k_unidist_iso_D$unifracs
 
 
  # GUniFrac with alpha 0.5 (i.e Generalised UniFrac Distance)
-du_iso_symbioant <- k_unidist_iso_symbioant[, , "d_0.5"]   
-dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
-
-# Cluster the samples
-hclust_samps_iso_symbioant <- upgma(du_iso_symbioant)
-
-# Make the sample tree
-tree_iso_symbioant <- ggtree(hclust_samps_iso_symbioant, size = 0.2) +
-  theme(aspect.ratio = 0.3) + layout_dendrogram()
-
-# Get a sample order from ggtree
-iso_sample_order <- tree_iso_symbioant$data %>% filter(isTip == "TRUE") %>%
-  arrange(y) %>%
-  pull(label)
-
-# Start plotting the composition data
-plot_df_iso_symbioant <- all_data %>%
-  mutate(sample_name = fct_relevel(sample_name, iso_sample_order))
-
-theme_set(theme_bw())
-
-
-# find the likely distinguishing seqs in here
-test_df <- seq_data %>%
-   group_by(name) %>%
-   summarise(mean = mean(value_rel), n = n()) %>%
-   arrange(desc(n), desc(mean))
-
-# colour them black to check
- test_pal <- all_pal
-# test_pal['C21ab'] <- "#000000" 
+du_iso_D <- k_unidist_iso_D[, , "d_0.5"]   
+dist_iso_D <- as.dist(du_iso_D, diag = FALSE)
 ```
-```
+
 
