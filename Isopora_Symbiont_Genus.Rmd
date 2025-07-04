@@ -189,7 +189,7 @@ seqs_long_A <- seqs_long %>%
   filter(str_sub(name, 1, 1) == "A" | str_detect(name, "_A"))
 ```
 
-##Cladicopium
+#Cladicopium
 
 ```{r}
 seqs_long_C <- seqs_long %>% 
@@ -283,7 +283,62 @@ isoPCA_C <- MDSxy.iso_C %>%
 
 isoPCA_C
 ```
-## Durusdinium
+
+### Procrustes
+```{r}
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
+
+iso_seqs_host <- ind_coords_iso %>% 
+  mutate("sample_name" = VialID)
+
+#code for defining specific colours per reef for procrustes plots later on
+reef_pal2 <- c("#ac1917", "#e54a50", "#b75420", "#ea8553", "#c0982b", "#eec76b", "#768b45", "#a9be77", "#B2DFDB", "#4eaaa6", "#00798C")
+
+reef_names <- c("Elizabeth", "Middleton", "Cato", "Wreck", "Kenn", "Mellish", "Marion","Frederick", "Saumarez", "Madgelaine", "NA")
+
+names(reef_pal2) <- reef_names
+```
+
+```{r}
+#here is the subset with the data that matches the host data
+shared_seqs_iso_C <- inner_join(iso_seqs_host, seq_data_C, by = "sample_name")
+
+
+#shared_seqs_iso_C <- shared_seqs_iso_C %>%   select(sample_name)
+```
+
+Host tree
+
+```{r}
+load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/iso_gen.RData") #load host data
+
+library(adegenet) #install required package
+library(poppr)
+
+
+# Check your individual names in iso_gen
+ind_names_host <- indNames(iso_gen)
+
+# Check the sample names you want to keep
+sample_names_C <- shared_seqs_iso_C$sample_name
+
+# Subset the genind object to retain only matching individuals
+iso_gen_subset_C <- iso_gen[ind_names_host %in% shared_seqs_iso_C$sample_name, ]
+
+length(indNames(iso_gen))          # Before 189
+length(indNames(iso_gen_subset_C))   # After 188
+
+#Compute the pairwise distances between multivariate observations; used on raw allele frequencies.
+host_shared_dist <- dist(iso_gen_subset_C, method = "euclidean") #calculate euclidean distance 
+
+# convert the distance matrix to a dist object
+host_dist_matrix <- as.dist(host_shared_dist)
+
+length(host_dist_matrix) #17578
+length(dist_iso_C) #17391
+```
+
+# Durusdinium
 ```{r}
 seqs_long_D <- seqs_long %>% 
   filter(str_sub(name, 1, 1) == "D" | str_detect(name, "_D"))
@@ -330,6 +385,7 @@ k_tree_iso_D <- kdist_iso_D %>% phangorn::upgma()
 
 k_tree_iso_D
 ```
+
 ```{r}
 seqs_wide_iso_D <- seq_data_D %>%
   dplyr::select(sample_name, name, value) %>%
