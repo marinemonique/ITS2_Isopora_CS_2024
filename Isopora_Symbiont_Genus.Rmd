@@ -189,6 +189,94 @@ seqs_long_A <- seqs_long %>%
   filter(str_sub(name, 1, 1) == "A" | str_detect(name, "_A"))
 ```
 
+```{r}
+san_check_A <- seqs_long_A %>% 
+  group_by(sample_name) %>%
+  summarise(total = sum(value))
+
+#List of samples that have sufficient depth
+keepers_ss_A <- san_check_A%>%
+  filter(total > 1500) #from 81 to 2
+
+# Filter out the failed samples
+seqs_long_A <- seqs_long_A %>%
+  filter(sample_name %in% keepers_ss_C$sample_name) %>%
+  group_by(sample_name) %>%
+  mutate(value_rel = value/sum(value)) %>% # Convert to relative abundance
+  ungroup() %>%
+  mutate(name = as.factor(name)) # Make sample names a factor
+```
+
+```{r}
+fasta_iso_A <- read_fasta_df("seqs.isopora.fasta") %>% 
+   filter(label %in% seqs_long_A$name) %>%   #only keeping DNA seqs that appear in seqs_long subset 
+  deframe() %>%
+  as_dna()
+```
+
+
+```{r}
+#creating the tree
+kdist_iso_A <- fasta_iso_A %>%
+  dna_to_DNAbin() %>%
+  kdistance(k = 7, residues = "DNA", method = "edgar") %>%
+  as.matrix()
+```
+
+```{r}
+k_tree_iso_A <- kdist_iso_A %>% phangorn::upgma()
+
+k_tree_iso_A #108
+```
+```{r}
+seqs_wide_iso_A <- seq_data_A %>%
+  dplyr::select(sample_name, name, value) %>%
+  pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
+  tibble::column_to_rownames(var = "sample_name")
+head(seqs_wide_iso_A) #108
+```
+
+```{r}
+k_unidist_iso_A <- GUniFrac(seqs_wide_iso_A, k_tree_iso_A)   #GUniFrac calculates all the distances 
+k_unidist_iso_A <- k_unidist_iso_A$unifracs
+
+
+ # GUniFrac with alpha 0.5 (i.e Generalised UniFrac Distance)
+du_iso_A <- k_unidist_iso_A[, , "d_0.5"]   
+dist_iso_A <- as.dist(du_iso_A, diag = FALSE)
+```
+### PCoa
+```{r}
+pcoa_iso_A <- cmdscale(dist_iso_A, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
+
+#outlier_samples <- XX
+
+ordiplot(pcoa_iso_A, display = 'sites', type = 'text')
+barplot (pcoa_iso_A$eig, names = paste ('PCoA', 1:187), las = 5, ylab = 'eigenvalues')
+
+# Custom x and y labels
+xlab = paste("Axis 1 (X%)")
+ylab = paste("Axis 2 (X%)")
+
+MDSxy.iso_A <- data.frame(pcoa_iso_A$points) %>% 
+  rownames_to_column(var = "sample_name") %>% 
+  left_join(., meta_iso)# %>% 
+ #  mutate(catBleaching = as.factor(catBleaching)) %>% 
+ # filter(!(Vial %in% outlier_samples)) 
+
+isoPCA_A <- MDSxy.iso_A %>%
+  filter(Reef != "NA") %>% 
+ # mutate(Reef = fct_relevel(Reef, reef_order)) %>%
+  ggplot(aes(X1, X2, fill = Reef)) + 
+  geom_point(alpha = 1, shape = 21, size = 3) + 
+  scale_fill_viridis_d(option = "magma", direction = -1)+ 
+#  scale_fill_manual(values = reef_pal) #+
+ theme(legend.position = "none", aspect.ratio = 1, text = element_text(size = 15))
+
+isoPCA_A
+```
+
+
 #Cladicopium
 
 ```{r}
@@ -302,6 +390,7 @@ names(reef_pal2) <- reef_names
 ```{r}
 #here is the subset with the data that matches the host data
 shared_seqs_iso_C <- inner_join(iso_seqs_host, seq_data_C, by = "sample_name")
+str(shared_seqs_iso_C)
 
 
 #shared_seqs_iso_C <- shared_seqs_iso_C %>%   select(sample_name)
@@ -383,7 +472,7 @@ kdist_iso_D <- fasta_iso_D %>%
 ```{r}
 k_tree_iso_D <- kdist_iso_D %>% phangorn::upgma()
 
-k_tree_iso_D
+k_tree_iso_D #why does the tree have 59 but the following table has 62?
 ```
 
 ```{r}
@@ -391,7 +480,7 @@ seqs_wide_iso_D <- seq_data_D %>%
   dplyr::select(sample_name, name, value) %>%
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
   tibble::column_to_rownames(var = "sample_name")
-head(seqs_wide_iso_D)
+head(seqs_wide_iso_D) #62
 ```
 
 
