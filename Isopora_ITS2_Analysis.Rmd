@@ -273,9 +273,11 @@ all_pal <- c(seqs_pal, profile_pal)
 all_pal['non-profile sequences'] <- "#808080" 
 
 # Join profiles and sequence data together into single dataframe and add more metadata
-all_data <- rbind(seqs_long, profile_data) #need to work out why my profiles_data has 51 variables, but the seqs_long only has 50.
+all_data <- rbind(seqs_long_c, profile_data) 
+# had to update the seqs_long to seqs_long_c - assume thats what you wanted?
 
 dplyr::setdiff(names(profile_data), names(seqs_long)) # the difference is the relative value column, but that was present historically so I am not sure why the all_data worked then but not now that the environment data is added
+#need to work out why my profiles_data has 51 variables, but the seqs_long only has 50.
 
 
 ```
