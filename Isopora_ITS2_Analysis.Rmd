@@ -842,70 +842,13 @@ procrust.iso
 protest(X = H.dist, Y = P.dist, scores = "sites", permutations = 999)
 ```
 
-## Moniques Code of the same thing above - Just combined into a single R markdown document.
-```{r, warning = FALSE, echo = FALSE, message=FALSE}
-library(ggsci)
-library(tidyverse)
-library(dplyr)
-library(forcats)
-library(reshape2)
-library(stringr)
-library(tidyr)
-library(tibble)
-library(sangerseqR)
-library(DECIPHER)
-library(Biostrings)
-library(phangorn)
-library(ape)
-library(ggplot2)
-library(ggtree)
-library(patchwork)
-library(bioseq)
-library(kmer)
-library(GUniFrac)
-library(seqinr)
-library(vegan)
-library(corrplot)
-library(ggrepel)
-
-library(ggmsa)
-library(dendextend)
-library(usedist)
-```
 
 
-```{r}
-seqs_iso <- read_tsv("seqs.abs.Isopora.txt") %>% 
-    filter(!(is.na(sample_name))) %>%
-  dplyr::select(sample_name, `A1`:`G3ai`) %>% 
-  mutate(sample_name = as.factor(sample_name)) %>% 
-  filter(!grepl("-20", sample_name) & !grepl("b", sample_name))
 
-seqs_iso
-```
-
-### Load metadata
-Note the metadata requires the imput of the CoralSea2024_Metadata.xlsx. you need to change the path for where the file lives on your in individual computer.
-
-```{r}
-
-library(readxl)
-CoralSea2024_Metadata <- read_excel("~/AIMS@JCU/CoralSea2024_Metadata.xlsx")
-
-meta_iso <- CoralSea2024_Metadata %>% 
-  rename("VialID" = "sample_name",
-         "Depth (m)"= "Depth") #renamed to match the Acropora metadata that was used in ITS2 analysis
-
-meta_iso <- meta_iso %>% 
-  select(sample_name, Reference, Reef, Site,Date, Bag, Species,Depth, `Bleach score`, Vial, Year) %>% 
-  filter(Species == "Isopora",
-         Year != "20")
-meta_iso
-```
 
 
 ### Combining sequence/metadata 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 # Convert to long format
 seqs_long <- seqs_iso %>%
   filter(!is.na(sample_name)) %>%
@@ -920,26 +863,26 @@ seqs_long <- seqs_iso %>%
 ### Filter by sumbioant genus
 
 ## Symbiodinium
-```{r}
+```{r eval = FALSE, echo=FALSE}
 seqs_long_A <- seqs_long %>% 
   filter(str_sub(name, 1, 1) == "A" | str_detect(name, "_A"))
 ```
 
 ##Cladicopium
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 seqs_long_C <- seqs_long %>% 
   filter(str_sub(name, 1, 1) == "C" | str_detect(name, "_C"))
 ```
 
 ## Durusdinium
-```{r}
+```{r eval = FALSE, echo=FALSE}
 seqs_long_D <- seqs_long %>% 
   filter(str_sub(name, 1, 1) == "D" | str_detect(name, "_D"))
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 san_check_D <- seqs_long_D %>% 
   group_by(sample_name) %>%
   summarise(total = sum(value))
@@ -957,7 +900,7 @@ seqs_long_D <- seqs_long_D %>%
   mutate(name = as.factor(name)) # Make sample names a factor
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 fasta_iso_D <- read_fasta_df("seqs.isopora.fasta") %>% 
    filter(label %in% seqs_long_D$name) %>%   #only keeping DNA seqs that appear in seqs_long subset 
   deframe() %>%
@@ -966,7 +909,7 @@ fasta_iso_D <- read_fasta_df("seqs.isopora.fasta") %>%
 
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #creating the tree
 kdist_iso_D <- fasta_iso_D %>%
   dna_to_DNAbin() %>%
@@ -974,7 +917,7 @@ kdist_iso_D <- fasta_iso_D %>%
   as.matrix()
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 k_tree_iso_D <- kdist_iso_D %>% phangorn::upgma()
 
 k_tree_iso_D
@@ -982,14 +925,14 @@ k_tree_iso_D
 #save(k_tree_iso_symbioant, file = "kdist_iso_symbioant.RData")
 load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
 ```
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #filter out non-profile sequences
 seq_data <- all_data %>% 
   filter(!str_detect(name, "non")) %>% 
   filter(!str_detect(name, "p_"))
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 seqs_wide_iso_symbioant <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
@@ -999,7 +942,7 @@ head(seqs_wide_iso_symbioant)
 save(seqs_wide_symbioant, file =  "seqs_wide_symbioant.RData")
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 k_unidist_iso_D <- GUniFrac(seqs_wide_iso_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
 k_unidist_iso_symbioant <- k_unidist_iso_symbioant$unifracs
 
@@ -1039,7 +982,7 @@ test_df <- seq_data %>%
 ```
 
 ## Fig 2B
-```{r}
+```{r eval = FALSE, echo=FALSE}
 bar_uni_iso_symbioant <- 
 ggplot(plot_df_iso_symbioant, aes(sample_name, value_rel)) +
 geom_bar(stat = "identity", aes(fill = name, colour = name)) +
@@ -1060,7 +1003,7 @@ tree_iso_symbioant / bar_uni_iso_symbioant
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 # Create reef strip
 reef_strip <- ggplot(plot_df_iso_symbioant, aes(x = sample_name, y = 1, fill = Reef)) +
   geom_tile() +
@@ -1079,7 +1022,7 @@ combined_plot
 ###4.1.3 iso Reef PCoA
 
 It is unclear to me how we determine the outlier samples here
-```{r}
+```{r eval = FALSE, echo=FALSE}
 pcoa_iso <- cmdscale(dist_iso_symbioant, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
 
 #outlier_samples <- XX
@@ -1111,7 +1054,7 @@ isoPCA
 
 ######IGNORE
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 
 # Q. Are we working with the post-med seqs according to the metadata in seqs?
 san_check <- seqs_long %>%
@@ -1194,7 +1137,7 @@ save(symbioant_iso_all, file = "symbioant_iso_all.RData")
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 # How many samples per species?
 all_data %>%
   distinct(sample_name, Reef) %>%
@@ -1213,7 +1156,7 @@ study_total <- all_data %>%
 
 #By symbiont genus
 Please note I was a bit confused by some of the calculations here, so I have hashed them out.
-```{r}
+```{r eval = FALSE, echo=FALSE}
 all_data %>%
   filter(!(str_detect(name, "p_")), name != "non-profile sequences") %>%
   filter(str_sub(name, 1, 1) == "C" | str_detect(name, "_C")) %>% 
@@ -1240,7 +1183,7 @@ all_data %>%
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 library(tidyverse)
 
 #total type profiles across Isopora 
@@ -1269,7 +1212,7 @@ all_data %>%
 
 Not sure this line works, not quite sure what I am meant to be doing here though.
 
-```{r eval=FALSE}
+```{r eval = FALSE, echo=FALSE}
 all_data %>% 
   filter(str_detect(name, "p_")) %>%
   group_by(sample_name) %>% 
@@ -1279,7 +1222,7 @@ all_data %>%
 #filter(n == 3)     #7 samples have 3 profiles 
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 all_data %>% 
     filter(str_detect(name, c("p_"))) %>% 
     filter(str_detect(name, c("p_C3k|p_C3"))) %>% 
@@ -1289,7 +1232,7 @@ all_data %>%
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #filter out non-profile sequences
 seq_data <- all_data %>% 
   filter(!str_detect(name, "non")) %>% 
@@ -1298,7 +1241,7 @@ seq_data <- all_data %>%
 
 #2.1 UPGMA tree
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 fasta_iso_symbioant <- read_fasta_df("seqs.isopora.fasta") %>% 
    filter(label %in% seqs_long$name) %>%   #only keeping DNA seqs that appear in seqs_long subset 
   deframe() %>%
@@ -1307,7 +1250,7 @@ fasta_iso_symbioant <- read_fasta_df("seqs.isopora.fasta") %>%
 
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #creating the tree
 kdist_iso_symbioant <- fasta_iso_symbioant %>%
   dna_to_DNAbin() %>%
@@ -1315,7 +1258,7 @@ kdist_iso_symbioant <- fasta_iso_symbioant %>%
   as.matrix()
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 k_tree_iso_symbioant <- kdist_iso_symbioant %>% phangorn::upgma()
 
 k_tree_iso_symbioant
@@ -1324,7 +1267,7 @@ k_tree_iso_symbioant
 load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 seqs_wide_iso_symbioant <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
@@ -1333,7 +1276,7 @@ seqs_wide_iso_symbioant <- seq_data %>%
 head(seqs_wide_iso_symbioant)
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 k_unidist_iso_symbioant <- GUniFrac(seqs_wide_iso_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
 k_unidist_iso_symbioant <- k_unidist_iso_symbioant$unifracs
 
@@ -1373,7 +1316,7 @@ test_df <- seq_data %>%
 ```
 
 ## Fig 2B
-```{r}
+```{r eval = FALSE, echo=FALSE}
 bar_uni_iso_symbioant <- 
 ggplot(plot_df_iso_symbioant, aes(sample_name, value_rel)) +
 geom_bar(stat = "identity", aes(fill = name, colour = name)) +
@@ -1394,7 +1337,7 @@ tree_iso_symbioant / bar_uni_iso_symbioant
 ```
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 # Create reef strip
 reef_strip <- ggplot(plot_df_iso_symbioant, aes(x = sample_name, y = 1, fill = Reef)) +
   geom_tile() +
@@ -1413,7 +1356,7 @@ combined_plot
 ###4.1.3 iso Reef PCoA
 
 It is unclear to me how we determine the outlier samples here
-```{r}
+```{r eval = FALSE, echo=FALSE}
 pcoa_iso <- cmdscale(dist_iso_symbioant, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
 
 #outlier_samples <- XX
@@ -1445,7 +1388,7 @@ isoPCA
 
 ## Procrustes Rotation
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
 
 iso_seqs_host <- ind_coords_iso %>% 
@@ -1459,7 +1402,7 @@ reef_names <- c("Elizabeth", "Middleton", "Cato", "Wreck", "Kenn", "Mellish", "M
 names(reef_pal2) <- reef_names
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #here is the subset with the data that matches the host data
 shared_seqs_iso <- inner_join(iso_seqs_host, seq_data, by = "sample_name")
 
@@ -1474,7 +1417,7 @@ shared_seqs_iso <- shared_seqs_iso %>%
 
 Host tree
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/iso_gen.RData") #load host data
 
 library(adegenet) #install required package
@@ -1523,13 +1466,13 @@ dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
 
 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #convert host (H) and symbiont (P) distance trees as data matrices
 H.dist <- host_dist_matrix %>% as.matrix()
 P.dist <- dist_iso_symbioant %>% as.matrix() 
 ```
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #must have same number of dimensions 
 dim(H.dist)
 dim(P.dist) #its really odd that the symbioant has 186 when the code running above has 187 sample names
@@ -1552,7 +1495,7 @@ dim(H.dist)
 
 ### Perform Paco analysis
 
-```{r, include = FALSE}
+```{r eval = FALSE, echo=FALSE}
 # Perform Procrustes analysis. logical that symbionts depend on the host. so X = host and Y = symbiont. 
 
 paco.iso <- procrustes(H.dist, P.dist, symmetric = FALSE)
@@ -1582,7 +1525,7 @@ Quantiles of Procrustes errors:
 
 ### Isopora procrustes plot
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #transfer PC coords into dataframe for plotting  
 hp.df.iso <- data.frame(rda1=paco.iso$Yrot[,1],
 rda2=paco.iso$Yrot[,2],xrda1=paco.iso$X[,1],
@@ -1617,13 +1560,13 @@ save(procrust.iso, file = "procrust.iso.RData")
 
 ### Test significance 
 
-```{r}
+```{r eval = FALSE, echo=FALSE}
 #testing significance 
 protest(X = H.dist, Y = P.dist, scores = "sites", permutations = 999)
 ```
 
 Visualise what is going on without those two massive outliers
-```{r}
+```{r eval = FALSE, echo=FALSE}
 no_outliers_iso_procreates <- hp.df.iso2 %>% 
   filter(xrda1> -50,
          xrda2>-50)
