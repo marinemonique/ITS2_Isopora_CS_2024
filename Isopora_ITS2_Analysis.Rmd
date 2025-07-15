@@ -16,8 +16,6 @@ library(tidyverse)
 library(dplyr)
 library(forcats)
 library(reshape2)
-library(stringr)
-library(tidyr)
 library(tibble)
 library(sangerseqR)
 library(DECIPHER)
@@ -90,11 +88,19 @@ meta_iso <- meta_iso %>% left_join(enviro)
 load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
 
 ind_coords_iso <- ind_coords_iso %>% mutate(HostCluster = case_when(
-    Axis1 < 0 & Axis2 < 0 ~ "IC1",
-    Axis1 > 0 & Axis2 > 25 ~ "IC2",
-    Axis1 > 20 & Axis2 < 0 ~ "IC3",
-    TRUE ~ NA_character_  # anything that doesn't match the above
+  Axis1 < -30 ~ "IC1", 
+Axis1 > -30 & Axis1 <0 & Axis2 < 20 ~ "IC1b",
+Axis1 > -30 & Axis1 <0 & Axis2 > 20  ~ "IC1c",
+Axis1 < 20 & Axis1> 0 ~ "IC2",
+Axis1 > 20 ~ "IC3",
+TRUE ~ NA_character_  # anything that doesn't match the above
   ))
+
+    #Axis1 < 0 & Axis2 < 0 ~ "IC1",
+    #Axis1 < -30 ~ "IC1", #depends on Magenas feedback
+    #Axis1 > 0 & Axis2 > 25 ~ "IC2",
+    #Axis1 > 20 & Axis2 < 0 ~ "IC3",
+    #TRUE ~ NA_character_  # anything that doesn't match the above
 
 ind_coords_iso <- ind_coords_iso %>% dplyr::rename(sample_name = SampleID) %>% 
   dplyr::select(Axis1, Axis2, Axis3, sample_name, HostCluster)
@@ -195,12 +201,12 @@ seqs_long <- seqs_iso %>%
   filter(value > 0) %>% # Remove zero values
   left_join(., meta_iso)
 
-seqs_long_c <- seqs_long %>%  filter(!str_detect(name, "non")) %>% 
+seqs_long <- seqs_long %>%  filter(!str_detect(name, "non")) %>% 
   filter(!str_detect(name, "p_")) %>%
   filter(str_sub(name, 1, 1) == "C" | str_detect(name, "_C"))
 
 # Q. Are we working with the post-med seqs according to the metadata in seqs?
-san_check <- seqs_long_c %>%
+san_check <- seqs_long %>%
   group_by(sample_name) %>%
   summarise(total = sum(value)) #A. yes
 
@@ -214,7 +220,7 @@ non_keep <- san_check %>%
 #we filter out 2 samples with less than A142 and A191
 
 # Filter out the failed samples
-seqs_long_c <- seqs_long_c %>%
+seqs_long <- seqs_long %>%
   filter(sample_name %in% keepers_ss$sample_name) %>%
   group_by(sample_name) %>%
   mutate(value_rel = value/sum(value)) %>% # Convert to relative abundance
@@ -273,7 +279,7 @@ all_pal <- c(seqs_pal, profile_pal)
 all_pal['non-profile sequences'] <- "#808080" 
 
 # Join profiles and sequence data together into single dataframe and add more metadata
-all_data <- rbind(seqs_long_c, profile_data) 
+all_data <- rbind(seqs_long, profile_data) 
 # had to update the seqs_long to seqs_long_c - assume thats what you wanted?
 
 dplyr::setdiff(names(profile_data), names(seqs_long)) # the difference is the relative value column, but that was present historically so I am not sure why the all_data worked then but not now that the environment data is added
@@ -398,6 +404,7 @@ k_tree_iso <- kdist_iso %>% phangorn::upgma()
 k_tree_iso
 ```
 
+Phylogenetic tree with only Cladicopium has 398 tips and 397 internal nodes.
 ```{r}
 seqs_wide_iso <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
@@ -484,6 +491,7 @@ combined_plot <- reef_strip / bar_uni_iso + plot_layout(heights = c(0.1, 1))
 combined_plot
 ```
 
+**Need to ask Magena why some of these are NA... I am not sure that she had that on her code**
 
 ###4.1.3 iso Reef PCoA
 
@@ -551,7 +559,7 @@ symbiont_long <- symbiont_long %>% na.omit()
 # Plot: faceted by HostCluster only
 sym_bar <- ggplot(symbiont_long, aes(x = sample_name, y = rel_abund, fill = name)) +
   geom_bar(stat = "identity", width = 0.9) +
-  facet_wrap(~HostCluster, scales = "free_x", nrow = 1) +
+  facet_wrap(~HostCluster, scales = "free_x", nrow = 2) +
   theme_bw() +
   labs(
     x = "Sample",
@@ -633,6 +641,8 @@ dim(meta_iso_sub)
 ```{r}
 ord_iso <- dbrda(du_iso_sub ~ Depth + HostCluster + VarSST + MeanDHW + MeanSST, data = meta_iso_sub)
 
+
+
 backstep_iso <- ordistep(ord_iso, direction = "backward", permutations = 999)
 anova(backstep_iso, by = 'margin')
 summary(backstep_iso)
@@ -663,8 +673,8 @@ filtered_names <- MDSxy.iso %>%
 ```{r}
 load("ind_coords_iso.RData")
 
-iso_seqs_host <- ind_coords_iso %>% 
-  mutate("sample_name" = VialID)
+iso_seqs_host <- ind_coords_iso #%>% 
+  #mutate("sample_name" = VialID)
 
 filtered_names <- MDSxy.iso %>% 
   distinct(sample_name) %>% 
