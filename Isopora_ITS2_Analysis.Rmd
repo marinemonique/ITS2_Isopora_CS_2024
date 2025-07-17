@@ -202,7 +202,7 @@ seqs_long <- seqs_iso %>%
   left_join(., meta_iso)
 
 seqs_long <- seqs_long %>%  filter(!str_detect(name, "non")) %>% 
-  filter(!str_detect(name, "p_")) %>%
+  filter(!str_detect(name, "p_")) #%>%
   filter(str_sub(name, 1, 1) == "C" | str_detect(name, "_C"))
 
 # Q. Are we working with the post-med seqs according to the metadata in seqs?
@@ -292,8 +292,9 @@ dplyr::setdiff(names(profile_data), names(seqs_long)) # the difference is the re
 ```{r}
 # How many samples per species?
 all_data %>%
-  distinct(sample_name, Reef) %>%
-  group_by(Reef) %>% 
+  distinct(sample_name#, Reef
+           ) %>%
+  #group_by(Reef) %>% 
   summarise(total_samples = n())
 
 study_total <- all_data %>% 
@@ -303,6 +304,15 @@ study_total <- all_data %>%
   pull(total_seqs)
 
 #9382894 sequences in isopora dataset
+```
+
+```{r non-profile sequences}
+nonprofileseqs <- all_data %>% 
+  filter(str_detect(name, "non")) %>% 
+  #filter(str_detect(name, "p_")) |> 
+  summarise(total_seqs = sum(value)) %>%
+  pull(total_seqs)
+#2528918 non profile sequences maybe?
 ```
 
 
@@ -334,6 +344,18 @@ all_data %>%
 # 947257	 total reads
 ```
 
+```{r Type Profile All CSV}
+all_data %>%
+  filter(str_detect(name, "p_")) %>%    # profiles start with p_
+  group_by(HostCluster, name) %>%
+  dplyr::count() %>%
+  ungroup() %>%  # ungroup to allow correct re-grouping and sorting
+  group_by(HostCluster) %>%
+  arrange(HostCluster, desc(n)) %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(cumulative_sum = cumsum(prop)) |> 
+  write.csv(file = "Isopora_ITS2_HostCluster_TP.csv")
+```
 
 ```{r}
 library(tidyverse)
@@ -379,6 +401,32 @@ all_data %>%
 seq_data <- all_data %>% 
   filter(!str_detect(name, "non")) %>% 
   filter(!str_detect(name, "p_"))
+```
+
+# Library Statistics
+
+```{r}
+all_data |> 
+  group_by(HostCluster) |> 
+  filter(!(str_detect(name, "p_")), name != "non-profile sequences") %>%
+  filter(str_sub(name, 1, 1) == "C" | str_detect(name, "_C")) %>% 
+  summarise(sum = sum(value))
+
+all_data %>%
+  group_by(HostCluster) |> 
+  filter(!(str_detect(name, "p_")), name != "non-profile sequences") %>%
+  filter(str_sub(name, 1, 1) == "A" | str_detect(name, "_A")) %>% 
+  summarise(sum = sum(value)) 
+# 10476			total seqs
+## Not sure about this calculation (X	 / study_total) * 100 # X Symbiodium
+
+
+# Total number of Durusdinium sequences
+all_data %>%
+  group_by(HostCluster) |> 
+  filter(!(str_detect(name, "p_")), name != "non-profile sequences") %>%
+  filter(str_sub(name, 1, 1) == "D" | str_detect(name, "_D")) %>% 
+  summarise(sum = sum(value)) 
 ```
 
 #2.1 UPGMA tree
