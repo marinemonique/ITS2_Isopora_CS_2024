@@ -85,7 +85,7 @@ meta_iso <- meta_iso %>% left_join(enviro)
 
 
 ```{r}
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
 
 ind_coords_iso <- ind_coords_iso %>% mutate(HostCluster = case_when(
   Axis1 < -30 ~ "IC1", 
@@ -796,7 +796,7 @@ dim(P.dist)
 
 # Subset to only the samples that are in both datasets
 intersect_samples <- intersect(rownames(H.dist), rownames(P.dist))
-intersect_samples_col <- intersect(colnames(H.dist), colnames(P.dist)) # The host data set had 177, and the symbioant had 187
+intersect_samples_col <- intersect(colnames(H.dist), colnames(P.dist)) # The host data set had 177, and the symbiont had 187
 P.dist_intersect <- P.dist[intersect_samples, intersect_samples_col]
 H.dist_intersect <- H.dist[intersect_samples, intersect_samples_col ]
 
@@ -970,8 +970,8 @@ k_tree_iso_D <- kdist_iso_D %>% phangorn::upgma()
 
 k_tree_iso_D
 
-#save(k_tree_iso_symbioant, file = "kdist_iso_symbioant.RData")
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
+#save(k_tree_iso_symbiont, file = "kdist_iso_symbiont.RData")
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/kdist_iso_symbiont.RData")
 ```
 ```{r eval = FALSE, echo=FALSE}
 #filter out non-profile sequences
@@ -981,38 +981,38 @@ seq_data <- all_data %>%
 ```
 
 ```{r eval = FALSE, echo=FALSE}
-seqs_wide_iso_symbioant <- seq_data %>%
+seqs_wide_iso_symbiont <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
   tibble::column_to_rownames(var = "sample_name")
 
-head(seqs_wide_iso_symbioant)
-save(seqs_wide_symbioant, file =  "seqs_wide_symbioant.RData")
+head(seqs_wide_iso_symbiont)
+save(seqs_wide_symbiont, file =  "seqs_wide_symbiont.RData")
 ```
 
 ```{r eval = FALSE, echo=FALSE}
-k_unidist_iso_D <- GUniFrac(seqs_wide_iso_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
-k_unidist_iso_symbioant <- k_unidist_iso_symbioant$unifracs
+k_unidist_iso_D <- GUniFrac(seqs_wide_iso_symbiont, k_tree_iso_symbiont)   #GUniFrac calculates all the distances 
+k_unidist_iso_symbiont <- k_unidist_iso_symbiont$unifracs
 
 
  # GUniFrac with alpha 0.5 (i.e Generalised UniFrac Distance)
-du_iso_symbioant <- k_unidist_iso_symbioant[, , "d_0.5"]   
-dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
+du_iso_symbiont <- k_unidist_iso_symbiont[, , "d_0.5"]   
+dist_iso_symbiont <- as.dist(du_iso_symbiont, diag = FALSE)
 
 # Cluster the samples
-hclust_samps_iso_symbioant <- upgma(du_iso_symbioant)
+hclust_samps_iso_symbiont <- upgma(du_iso_symbiont)
 
 # Make the sample tree
-tree_iso_symbioant <- ggtree(hclust_samps_iso_symbioant, size = 0.2) +
+tree_iso_symbiont <- ggtree(hclust_samps_iso_symbiont, size = 0.2) +
   theme(aspect.ratio = 0.3) + layout_dendrogram()
 
 # Get a sample order from ggtree
-iso_sample_order <- tree_iso_symbioant$data %>% filter(isTip == "TRUE") %>%
+iso_sample_order <- tree_iso_symbiont$data %>% filter(isTip == "TRUE") %>%
   arrange(y) %>%
   pull(label)
 
 # Start plotting the composition data
-plot_df_iso_symbioant <- all_data %>%
+plot_df_iso_symbiont <- all_data %>%
   mutate(sample_name = fct_relevel(sample_name, iso_sample_order))
 
 theme_set(theme_bw())
@@ -1031,8 +1031,8 @@ test_df <- seq_data %>%
 
 ## Fig 2B
 ```{r eval = FALSE, echo=FALSE}
-bar_uni_iso_symbioant <- 
-ggplot(plot_df_iso_symbioant, aes(sample_name, value_rel)) +
+bar_uni_iso_symbiont <- 
+ggplot(plot_df_iso_symbiont, aes(sample_name, value_rel)) +
 geom_bar(stat = "identity", aes(fill = name, colour = name)) +
 theme(aspect.ratio = 0.5, legend.position = "none", axis.text.y=element_blank(), axis.ticks.y = element_blank(),
       axis.text.x=element_blank(), axis.ticks.x = element_blank(),
@@ -1047,20 +1047,20 @@ guides(fill=guide_legend(ncol=2))
 
 #p_bar_uni is the sequences by colour. P_tree_tip is the tree coloured by reef. 
 
-tree_iso_symbioant / bar_uni_iso_symbioant
+tree_iso_symbiont / bar_uni_iso_symbiont
 ```
 
 
 ```{r eval = FALSE, echo=FALSE}
 # Create reef strip
-reef_strip <- ggplot(plot_df_iso_symbioant, aes(x = sample_name, y = 1, fill = Reef)) +
+reef_strip <- ggplot(plot_df_iso_symbiont, aes(x = sample_name, y = 1, fill = Reef)) +
   geom_tile() +
   theme_void() +
   theme(legend.position = "top") #+
  # scale_fill_brewer(palette = "Set2")  # or use your own palette
 
 # Now combine the reef strip and your barplot
-combined_plot <- reef_strip / bar_uni_iso_symbioant + plot_layout(heights = c(0.1, 1))
+combined_plot <- reef_strip / bar_uni_iso_symbiont + plot_layout(heights = c(0.1, 1))
 
 # Display it
 combined_plot
@@ -1071,7 +1071,7 @@ combined_plot
 
 It is unclear to me how we determine the outlier samples here
 ```{r eval = FALSE, echo=FALSE}
-pcoa_iso <- cmdscale(dist_iso_symbioant, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
+pcoa_iso <- cmdscale(dist_iso_symbiont, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
 
 #outlier_samples <- XX
 
@@ -1180,8 +1180,8 @@ all_pal['non-profile sequences'] <- "#808080"
 # Join profiles and sequence data together into single dataframe and add more metadata
 all_data <- rbind(seqs_long, profile_data) 
 
-symbioant_iso_all <- all_data
-save(symbioant_iso_all, file = "symbioant_iso_all.RData")
+symbiont_iso_all <- all_data
+save(symbiont_iso_all, file = "symbiont_iso_all.RData")
 ```
 
 
@@ -1290,7 +1290,7 @@ seq_data <- all_data %>%
 #2.1 UPGMA tree
 
 ```{r eval = FALSE, echo=FALSE}
-fasta_iso_symbioant <- read_fasta_df("seqs.isopora.fasta") %>% 
+fasta_iso_symbiont <- read_fasta_df("seqs.isopora.fasta") %>% 
    filter(label %in% seqs_long$name) %>%   #only keeping DNA seqs that appear in seqs_long subset 
   deframe() %>%
   as_dna()
@@ -1300,53 +1300,53 @@ fasta_iso_symbioant <- read_fasta_df("seqs.isopora.fasta") %>%
 
 ```{r eval = FALSE, echo=FALSE}
 #creating the tree
-kdist_iso_symbioant <- fasta_iso_symbioant %>%
+kdist_iso_symbiont <- fasta_iso_symbiont %>%
   dna_to_DNAbin() %>%
   kdistance(k = 7, residues = "DNA", method = "edgar") %>%
   as.matrix()
 ```
 
 ```{r eval = FALSE, echo=FALSE}
-k_tree_iso_symbioant <- kdist_iso_symbioant %>% phangorn::upgma()
+k_tree_iso_symbiont <- kdist_iso_symbiont %>% phangorn::upgma()
 
-k_tree_iso_symbioant
+k_tree_iso_symbiont
 
-#save(k_tree_iso_symbioant, file = "kdist_iso_symbioant.RData")
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
+#save(k_tree_iso_symbiont, file = "kdist_iso_symbiont.RData")
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/kdist_iso_symbiont.RData")
 ```
 
 ```{r eval = FALSE, echo=FALSE}
-seqs_wide_iso_symbioant <- seq_data %>%
+seqs_wide_iso_symbiont <- seq_data %>%
   dplyr::select(sample_name, name, value) %>%
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
   tibble::column_to_rownames(var = "sample_name")
 
-head(seqs_wide_iso_symbioant)
+head(seqs_wide_iso_symbiont)
 ```
 
 ```{r eval = FALSE, echo=FALSE}
-k_unidist_iso_symbioant <- GUniFrac(seqs_wide_iso_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
-k_unidist_iso_symbioant <- k_unidist_iso_symbioant$unifracs
+k_unidist_iso_symbiont <- GUniFrac(seqs_wide_iso_symbiont, k_tree_iso_symbiont)   #GUniFrac calculates all the distances 
+k_unidist_iso_symbiont <- k_unidist_iso_symbiont$unifracs
 
 
  # GUniFrac with alpha 0.5 (i.e Generalised UniFrac Distance)
-du_iso_symbioant <- k_unidist_iso_symbioant[, , "d_0.5"]   
-dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
+du_iso_symbiont <- k_unidist_iso_symbiont[, , "d_0.5"]   
+dist_iso_symbiont <- as.dist(du_iso_symbiont, diag = FALSE)
 
 # Cluster the samples
-hclust_samps_iso_symbioant <- upgma(du_iso_symbioant)
+hclust_samps_iso_symbiont <- upgma(du_iso_symbiont)
 
 # Make the sample tree
-tree_iso_symbioant <- ggtree(hclust_samps_iso_symbioant, size = 0.2) +
+tree_iso_symbiont <- ggtree(hclust_samps_iso_symbiont, size = 0.2) +
   theme(aspect.ratio = 0.3) + layout_dendrogram()
 
 # Get a sample order from ggtree
-iso_sample_order <- tree_iso_symbioant$data %>% filter(isTip == "TRUE") %>%
+iso_sample_order <- tree_iso_symbiont$data %>% filter(isTip == "TRUE") %>%
   arrange(y) %>%
   pull(label)
 
 # Start plotting the composition data
-plot_df_iso_symbioant <- all_data %>%
+plot_df_iso_symbiont <- all_data %>%
   mutate(sample_name = fct_relevel(sample_name, iso_sample_order))
 
 theme_set(theme_bw())
@@ -1365,8 +1365,8 @@ test_df <- seq_data %>%
 
 ## Fig 2B
 ```{r eval = FALSE, echo=FALSE}
-bar_uni_iso_symbioant <- 
-ggplot(plot_df_iso_symbioant, aes(sample_name, value_rel)) +
+bar_uni_iso_symbiont <- 
+ggplot(plot_df_iso_symbiont, aes(sample_name, value_rel)) +
 geom_bar(stat = "identity", aes(fill = name, colour = name)) +
 theme(aspect.ratio = 0.5, legend.position = "none", axis.text.y=element_blank(), axis.ticks.y = element_blank(),
       axis.text.x=element_blank(), axis.ticks.x = element_blank(),
@@ -1381,20 +1381,20 @@ guides(fill=guide_legend(ncol=2))
 
 #p_bar_uni is the sequences by colour. P_tree_tip is the tree coloured by reef. 
 
-tree_iso_symbioant / bar_uni_iso_symbioant
+tree_iso_symbiont / bar_uni_iso_symbiont
 ```
 
 
 ```{r eval = FALSE, echo=FALSE}
 # Create reef strip
-reef_strip <- ggplot(plot_df_iso_symbioant, aes(x = sample_name, y = 1, fill = Reef)) +
+reef_strip <- ggplot(plot_df_iso_symbiont, aes(x = sample_name, y = 1, fill = Reef)) +
   geom_tile() +
   theme_void() +
   theme(legend.position = "top") #+
  # scale_fill_brewer(palette = "Set2")  # or use your own palette
 
 # Now combine the reef strip and your barplot
-combined_plot <- reef_strip / bar_uni_iso_symbioant + plot_layout(heights = c(0.1, 1))
+combined_plot <- reef_strip / bar_uni_iso_symbiont + plot_layout(heights = c(0.1, 1))
 
 # Display it
 combined_plot
@@ -1405,7 +1405,7 @@ combined_plot
 
 It is unclear to me how we determine the outlier samples here
 ```{r eval = FALSE, echo=FALSE}
-pcoa_iso <- cmdscale(dist_iso_symbioant, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
+pcoa_iso <- cmdscale(dist_iso_symbiont, eig = TRUE)    #this is doing 'cmds' or classic multidimensional scaling
 
 #outlier_samples <- XX
 
@@ -1437,7 +1437,7 @@ isoPCA
 ## Procrustes Rotation
 
 ```{r eval = FALSE, echo=FALSE}
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/Isopora/ind_coords_iso.RData")
 
 iso_seqs_host <- ind_coords_iso %>% 
   mutate("sample_name" = VialID)
@@ -1457,7 +1457,7 @@ shared_seqs_iso <- inner_join(iso_seqs_host, seq_data, by = "sample_name")
 seq_data %>% 
   distinct(sample_name) %>% 
   nrow()
- #should be 187 in the symbioant
+ #should be 187 in the symbiont
 
 shared_seqs_iso <- shared_seqs_iso %>% 
   select(sample_name)
@@ -1466,7 +1466,7 @@ shared_seqs_iso <- shared_seqs_iso %>%
 Host tree
 
 ```{r eval = FALSE, echo=FALSE}
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/Isopora/iso_gen.RData") #load host data
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/Isopora/iso_gen.RData") #load host data
 
 library(adegenet) #install required package
 library(poppr)
@@ -1490,44 +1490,44 @@ host_shared_dist <- dist(iso_gen_subset, method = "euclidean") #calculate euclid
 # convert the distance matrix to a dist object
 host_dist_matrix <- as.dist(host_shared_dist)
 
-#Create a matrix with only common sample names for symbioant
-seqs_wide_symbioant <- seq_data %>%
+#Create a matrix with only common sample names for symbiont
+seqs_wide_symbiont <- seq_data %>%
   select(sample_name, name, value) %>%
   filter(sample_name %in% shared_seqs_iso$sample_name) %>% 
   pivot_wider(names_from = name, values_from = value, values_fill = 0) %>%
   tibble::column_to_rownames(var = "sample_name") #187 samples
 
-#k_tree_iso_symbioant <- kdist_iso_symbioant %>% phangorn::upgma()
+#k_tree_iso_symbiont <- kdist_iso_symbiont %>% phangorn::upgma()
 
-load("~/AIMS@JCU/CoralSeaSymbioants/ITS2_Isopora_CS_2024/kdist_iso_symbioant.RData")
+load("~/AIMS@JCU/CoralSeasymbionts/ITS2_Isopora_CS_2024/kdist_iso_symbiont.RData")
 
-k_unidist_symbioant <- GUniFrac(seqs_wide_symbioant, k_tree_iso_symbioant)   #GUniFrac calculates all the distances 
-k_unidist_symbioant <- k_unidist_symbioant$unifracs
+k_unidist_symbiont <- GUniFrac(seqs_wide_symbiont, k_tree_iso_symbiont)   #GUniFrac calculates all the distances 
+k_unidist_symbiont <- k_unidist_symbiont$unifracs
 
 
  # GUniFrac with alpha 0.5 (i.e Generalised UniFrac Distance)
-du_iso_symbioant <- k_unidist_symbioant[, , "d_0.5"]   
-dist_iso_symbioant <- as.dist(du_iso_symbioant, diag = FALSE)
+du_iso_symbiont <- k_unidist_symbiont[, , "d_0.5"]   
+dist_iso_symbiont <- as.dist(du_iso_symbiont, diag = FALSE)
 ```
 
-# Symbioant Tree 
+# symbiont Tree 
 
 
 
 ```{r eval = FALSE, echo=FALSE}
 #convert host (H) and symbiont (P) distance trees as data matrices
 H.dist <- host_dist_matrix %>% as.matrix()
-P.dist <- dist_iso_symbioant %>% as.matrix() 
+P.dist <- dist_iso_symbiont %>% as.matrix() 
 ```
 
 ```{r eval = FALSE, echo=FALSE}
 #must have same number of dimensions 
 dim(H.dist)
-dim(P.dist) #its really odd that the symbioant has 186 when the code running above has 187 sample names
+dim(P.dist) #its really odd that the symbiont has 186 when the code running above has 187 sample names
 
 # Subset to only the samples that are in both datasets
 intersect_samples <- intersect(rownames(H.dist), rownames(P.dist))
-intersect_samples_col <- intersect(colnames(H.dist), colnames(P.dist)) # The host data set had 189, and the symbioant had 186
+intersect_samples_col <- intersect(colnames(H.dist), colnames(P.dist)) # The host data set had 189, and the symbiont had 186
 P.dist_intersect <- P.dist[intersect_samples, intersect_samples_col]
 H.dist_intersect <- H.dist[intersect_samples, intersect_samples_col ]
 
